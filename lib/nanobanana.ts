@@ -41,8 +41,6 @@ const apiKey = process.env.NANO_BANANA_API_KEY;
 const provider = (process.env.NANO_BANANA_PROVIDER ?? "nanobanana") as Provider;
 const replicateModel = process.env.NANO_BANANA_REPLICATE_MODEL;
 const replicateVersion = process.env.NANO_BANANA_REPLICATE_VERSION;
-const baseUrl = process.env.NANO_BANANA_BASE_URL;
-const apiKey = process.env.NANO_BANANA_API_KEY;
 
 function getEnv() {
   if (!baseUrl) {
@@ -66,7 +64,6 @@ function getEnv() {
   }
 
   return { baseUrl, apiKey, provider, replicateModel, replicateVersion };
-  return { baseUrl, apiKey };
 }
 
 function endpoint(path: string, base: string) {
@@ -80,6 +77,44 @@ async function handleResponse<T>(res: Response, schema: z.ZodSchema<T>): Promise
   }
   const json = await res.json();
   return schema.parse(json);
+}
+
+function mapReplicateStatus(status: string): JobStatus {
+  switch (status) {
+    case "succeeded":
+      return "succeeded";
+    case "failed":
+    case "canceled":
+      return "failed";
+    case "starting":
+    case "processing":
+    case "running":
+      return "running";
+    case "queued":
+    case "pending":
+      return "queued";
+    default:
+      return "running";
+  }
+}
+
+function extractReplicateResult(
+  output: z.infer<typeof replicatePredictionSchema>["output"]
+): string | undefined {
+  if (!output) {
+    return undefined;
+  }
+
+  if (typeof output === "string") {
+    return output;
+  }
+
+  if (Array.isArray(output)) {
+    const firstString = output.find((item): item is string => typeof item === "string");
+    return firstString;
+  }
+
+  return undefined;
 }
 
 export async function generate(payload: GeneratePayload) {
@@ -122,11 +157,6 @@ export async function getJob(jobId: string) {
     method: "GET",
     headers: {
       Authorization: `Bearer ${env.apiKey}`,
-  const { baseUrl: base, apiKey: key } = getEnv();
-  const response = await fetch(endpoint(`/v1/jobs/${jobId}`, base), {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${key}`,
     },
     cache: "no-store",
   });
