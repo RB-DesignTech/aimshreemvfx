@@ -41,6 +41,8 @@ const apiKey = process.env.NANO_BANANA_API_KEY;
 const provider = (process.env.NANO_BANANA_PROVIDER ?? "nanobanana") as Provider;
 const replicateModel = process.env.NANO_BANANA_REPLICATE_MODEL;
 const replicateVersion = process.env.NANO_BANANA_REPLICATE_VERSION;
+const baseUrl = process.env.NANO_BANANA_BASE_URL;
+const apiKey = process.env.NANO_BANANA_API_KEY;
 
 function getEnv() {
   if (!baseUrl) {
@@ -64,6 +66,7 @@ function getEnv() {
   }
 
   return { baseUrl, apiKey, provider, replicateModel, replicateVersion };
+  return { baseUrl, apiKey };
 }
 
 function endpoint(path: string, base: string) {
@@ -79,64 +82,13 @@ async function handleResponse<T>(res: Response, schema: z.ZodSchema<T>): Promise
   return schema.parse(json);
 }
 
-function mapReplicateStatus(status: string): JobStatus {
-  switch (status) {
-    case "starting":
-    case "queued":
-      return "queued";
-    case "processing":
-    case "running":
-      return "running";
-    case "succeeded":
-      return "succeeded";
-    default:
-      return "failed";
-  }
-}
-
-function extractReplicateResult(
-  output: string | string[] | null | undefined
-): string | undefined {
-  if (!output) {
-    return undefined;
-  }
-
-  if (typeof output === "string") {
-    return output;
-  }
-
-  return output.find((value) => value.startsWith("http"));
-}
-
 export async function generate(payload: GeneratePayload) {
-  const env = getEnv();
-
-  if (env.provider === "replicate") {
-    const response = await fetch(endpoint("/v1/predictions", env.baseUrl), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Token ${env.apiKey}`,
-      },
-      body: JSON.stringify({
-        ...(env.replicateModel ? { model: env.replicateModel } : {}),
-        ...(env.replicateVersion ? { version: env.replicateVersion } : {}),
-        input: {
-          prompt: payload.prompt,
-          reference_image: payload.referenceImage,
-        },
-      }),
-    });
-
-    const data = await handleResponse(response, replicatePredictionSchema);
-    return { jobId: data.id };
-  }
-
-  const response = await fetch(endpoint("/v1/generate", env.baseUrl), {
+  const { baseUrl: base, apiKey: key } = getEnv();
+  const response = await fetch(endpoint("/v1/generate", base), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${env.apiKey}`,
+      Authorization: `Bearer ${key}`,
     },
     body: JSON.stringify(payload),
   });
@@ -170,6 +122,11 @@ export async function getJob(jobId: string) {
     method: "GET",
     headers: {
       Authorization: `Bearer ${env.apiKey}`,
+  const { baseUrl: base, apiKey: key } = getEnv();
+  const response = await fetch(endpoint(`/v1/jobs/${jobId}`, base), {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${key}`,
     },
     cache: "no-store",
   });

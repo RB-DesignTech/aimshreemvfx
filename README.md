@@ -21,6 +21,10 @@ pnpm i zod
 4. Install dependencies with `pnpm install`.
 5. Start the development server with `pnpm dev` and open http://localhost:3000 to explore the playground.
 6. When deploying, ensure the NanoBanana (or Replicate) environment variables are configured on your hosting platform.
+3. Create a `.env.local` file (or copy `.env.local.example` to `.env.local`) and populate it with your NanoBanana credentials and optional image host configuration.
+4. Install dependencies with `pnpm install`.
+5. Start the development server with `pnpm dev` and open http://localhost:3000 to explore the playground.
+6. When deploying, ensure the NanoBanana environment variables are configured on your hosting platform.
 
 ## 2. Useful scripts
 
@@ -37,6 +41,8 @@ Use `.env.local.example` as a template for your local secrets. The app expects:
 - `NANO_BANANA_API_KEY` – API key or token used to authorize requests.
 - `NANO_BANANA_PROVIDER` – Optional provider selector (`nanobanana` by default, set to `replicate` when using Replicate-hosted NanoBanana models).
 - `NANO_BANANA_REPLICATE_MODEL` / `NANO_BANANA_REPLICATE_VERSION` – Replicate-specific identifiers required when the provider is `replicate` (supply at least one).
+- `NANO_BANANA_BASE_URL` – Base URL for the NanoBanana API (e.g. `https://api.nanobanana.dev`).
+- `NANO_BANANA_API_KEY` – API key to authorize requests.
 - `NEXT_IMAGE_REMOTE_PATTERNS` – Optional comma-separated list of remote image hosts allowed by Next/Image.
 
 ## 4. Project structure highlights
