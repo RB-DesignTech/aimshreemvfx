@@ -3,6 +3,7 @@ node_modules
 out
 .env.local
 .env*
+!.env.local.example
 .DS_Store
 
 # Logs
