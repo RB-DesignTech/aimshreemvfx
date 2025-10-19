@@ -118,12 +118,40 @@ function extractReplicateResult(
 }
 
 export async function generate(payload: GeneratePayload) {
-  const { baseUrl: base, apiKey: key } = getEnv();
-  const response = await fetch(endpoint("/v1/generate", base), {
+  const env = getEnv();
+
+  if (env.provider === "replicate") {
+    const request: Record<string, unknown> = {
+      input: {
+        prompt: payload.prompt,
+        image: payload.referenceImage,
+      },
+    };
+
+    if (env.replicateVersion) {
+      request.version = env.replicateVersion;
+    } else if (env.replicateModel) {
+      request.model = env.replicateModel;
+    }
+
+    const response = await fetch(env.baseUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Token ${env.apiKey}`,
+      },
+      body: JSON.stringify(request),
+    });
+
+    const prediction = await handleResponse(response, replicatePredictionSchema);
+    return generateResponseSchema.parse({ jobId: prediction.id });
+  }
+
+  const response = await fetch(endpoint("/v1/generate", env.baseUrl), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`,
+      Authorization: `Bearer ${env.apiKey}`,
     },
     body: JSON.stringify(payload),
   });
