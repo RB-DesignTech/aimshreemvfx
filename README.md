@@ -16,7 +16,7 @@ pnpm i zod
 2. Copy the contents of this repository into the generated `curio-vfx` folder (or apply the diff on top of the scaffold) so the custom UI, API routes, and styling are available.
 3. Duplicate `.env.local.example` to `.env.local` and populate the values:
    - Set `GEMINI_API_KEY` to your Google AI Studio key.
-   - Optionally override `GEMINI_IMAGE_MODEL` if you want something other than `gemini-2.5-flash`.
+  - Optionally override `GEMINI_IMAGE_MODEL` if you want something other than `gemini-2.5-flash-image`.
 4. Install dependencies with `pnpm install`.
 5. Start the development server with `pnpm dev` and open http://localhost:3000 to explore the playground.
 6. When deploying, ensure the Gemini environment variables are configured on your hosting platform.
@@ -33,7 +33,7 @@ pnpm i zod
 Use `.env.local.example` as a template for your local secrets. The app expects:
 
 - `GEMINI_API_KEY` – API key generated in Google AI Studio.
-- `GEMINI_IMAGE_MODEL` – Optional override for the image-capable Gemini model (defaults to `gemini-2.5-flash`).
+- `GEMINI_IMAGE_MODEL` – Optional override for the image-capable Gemini model (defaults to `gemini-2.5-flash-image`).
 
 ## 4. Project structure highlights
 
