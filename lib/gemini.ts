@@ -8,7 +8,7 @@ type GeneratePayload = {
 
 const envSchema = z.object({
   apiKey: z.string().min(1, "GEMINI_API_KEY is required"),
-  model: z.string().min(1).default("gemini-2.5-flash"),
+  model: z.string().min(1).default("gemini-2.5-flash-image"),
 });
 
 function getEnv() {
@@ -55,7 +55,6 @@ export async function generateImage(payload: GeneratePayload) {
         ],
       },
     ],
-    generationConfig: { responseMimeType: "image/png" },
   });
 
   const imagePart = result.response.candidates
