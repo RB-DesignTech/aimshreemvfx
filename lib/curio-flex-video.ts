@@ -205,11 +205,13 @@ export async function generateVideo({
 
   const instance: Record<string, unknown> = {
     prompt: combinedPrompt,
-    aspectRatio,
   };
 
   const parameters: Record<string, unknown> = {
     durationSeconds,
+    videoConfig: {
+      aspectRatio,
+    },
   };
 
   if (referenceImage) {
