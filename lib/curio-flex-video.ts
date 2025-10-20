@@ -38,17 +38,6 @@ type VideoCandidate = {
   uri?: string;
 };
 
-type UploadedFileResponse = {
-  file?: {
-    name?: string;
-    uri?: string;
-    mimeType?: string;
-  };
-  error?: {
-    message?: string;
-  };
-};
-
 function cleanEnv(value?: string | null) {
   const trimmed = value?.trim();
   return trimmed ? trimmed : undefined;
@@ -202,66 +191,6 @@ function sanitiseDuration(duration: string) {
   return parsed;
 }
 
-async function uploadReferenceImage(
-  dataUrl: string,
-  apiKey: string,
-  baseUrl: string,
-  apiVersion: string
-) {
-  const { mimeType, data } = parseDataUrl(dataUrl);
-  const fileBuffer = Buffer.from(data, "base64");
-
-  const metadata = JSON.stringify({
-    file: {
-      displayName: "Curio Flex Reference Image",
-      mimeType,
-    },
-  });
-
-  const formData = new FormData();
-  formData.append("metadata", new Blob([metadata], { type: "application/json" }));
-  formData.append("file", new Blob([fileBuffer], { type: mimeType }), "reference-image");
-
-  const uploadEndpoint = `${baseUrl}/upload/${apiVersion}/files?uploadType=multipart`;
-
-  const response = await fetch(uploadEndpoint, {
-    method: "POST",
-    headers: {
-      "x-goog-api-key": apiKey,
-    },
-    body: formData,
-  });
-
-  const responseText = await response.text();
-  let body: UploadedFileResponse | undefined;
-
-  try {
-    body = responseText ? (JSON.parse(responseText) as UploadedFileResponse) : undefined;
-  } catch (error) {
-    // Some error responses from the API are plain text instead of JSON. We'll
-    // surface the original response below so callers receive a helpful error
-    // message.
-    body = undefined;
-  }
-
-  if (!response.ok) {
-    const message = (body?.error?.message ?? responseText) || "Failed to upload reference image";
-    throw new Error(message);
-  }
-
-  if (!body) {
-    throw new Error("Reference image upload response was not valid JSON");
-  }
-
-  const fileUri = body.file?.uri;
-
-  if (!fileUri) {
-    throw new Error("Reference image upload did not return a file URI");
-  }
-
-  return { fileUri, mimeType };
-}
-
 export async function generateVideo({
   prompt,
   storyboard,
@@ -292,13 +221,16 @@ export async function generateVideo({
       throw new Error("Veo 3.1 requires an 8 second duration when using a reference image");
     }
 
-    const { fileUri } = await uploadReferenceImage(referenceImage, apiKey, baseUrl, apiVersion);
+    const { mimeType, data } = parseDataUrl(referenceImage);
 
     instance.referenceImages = [
       {
         referenceType: "ASSET",
         image: {
-          fileUri,
+          inlineData: {
+            mimeType,
+            data,
+          },
         },
       },
     ];
