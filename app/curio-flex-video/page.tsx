@@ -8,13 +8,14 @@ import Particles from "@/components/Particles";
 type GenerationStatus = "idle" | "running" | "succeeded" | "failed";
 
 type GenerationResponse = {
-  image: string;
+  video: string;
+  mimeType: string;
 };
 
 const statusMessages: Record<GenerationStatus, string> = {
   idle: "Ready for your Curio Flex Video concept",
-  running: "Sketching motion cues...",
-  succeeded: "Storyboard concept ready",
+  running: "Rendering motion cues...",
+  succeeded: "Motion test rendered",
   failed: "The Curio Flex Video muse is silent",
 };
 
@@ -29,6 +30,7 @@ export default function CurioFlexVideoPage() {
   const [aspectRatio, setAspectRatio] = useState("16:9");
   const [status, setStatus] = useState<GenerationStatus>("idle");
   const [resultUrl, setResultUrl] = useState<string | null>(null);
+  const [resultMimeType, setResultMimeType] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -53,6 +55,7 @@ export default function CurioFlexVideoPage() {
     const file = files[0];
     setError(null);
     setResultUrl(null);
+    setResultMimeType(null);
     setStatus("idle");
     setReferenceName(file.name);
 
@@ -79,6 +82,7 @@ export default function CurioFlexVideoPage() {
     setStatus("running");
     setError(null);
     setResultUrl(null);
+    setResultMimeType(null);
 
     try {
       const response = await fetch("/api/curio-flex-video/generate", {
@@ -100,7 +104,9 @@ export default function CurioFlexVideoPage() {
       }
 
       const data: GenerationResponse = await response.json();
-      setResultUrl(data.image);
+      const dataUrl = `data:${data.mimeType};base64,${data.video}`;
+      setResultUrl(dataUrl);
+      setResultMimeType(data.mimeType);
       setStatus("succeeded");
     } catch (err) {
       console.error(err);
@@ -115,9 +121,15 @@ export default function CurioFlexVideoPage() {
     if (!hasResult || !resultUrl) return;
     const link = document.createElement("a");
     link.href = resultUrl;
-    link.download = "curio-flex-video-storyboard.svg";
+    const extension = (() => {
+      if (!resultMimeType) return "mp4";
+      if (resultMimeType === "video/webm") return "webm";
+      if (resultMimeType === "video/mp4") return "mp4";
+      return "video";
+    })();
+    link.download = `curio-flex-video.${extension}`;
     link.click();
-  }, [hasResult, resultUrl]);
+  }, [hasResult, resultUrl, resultMimeType]);
 
   const onDrop = useCallback(
     async (event: React.DragEvent<HTMLDivElement>) => {
@@ -264,7 +276,7 @@ export default function CurioFlexVideoPage() {
                 onClick={onSubmit}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Sketching" : "Generate Preview"}
+                {isSubmitting ? "Rendering" : "Generate Video"}
               </button>
               <button
                 type="button"
@@ -272,7 +284,7 @@ export default function CurioFlexVideoPage() {
                 onClick={onDownload}
                 disabled={!hasResult}
               >
-                Download Board
+                Download Video
               </button>
             </div>
           </div>
@@ -299,14 +311,16 @@ export default function CurioFlexVideoPage() {
             </div>
             <div className="relative flex-1 overflow-hidden rounded-3xl border border-orange-200/20 bg-slate-950/60 shadow-neon">
               {resultUrl ? (
-                <NextImage
-                  src={resultUrl}
-                  alt="Generated Curio Flex Video storyboard"
-                  fill
-                  unoptimized
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="object-cover"
-                />
+                <video
+                  key={resultUrl}
+                  controls
+                  loop
+                  muted
+                  playsInline
+                  className="h-full w-full object-cover"
+                >
+                  <source src={resultUrl} type={resultMimeType ?? "video/mp4"} />
+                </video>
               ) : referenceImage ? (
                 <NextImage
                   src={referenceImage}

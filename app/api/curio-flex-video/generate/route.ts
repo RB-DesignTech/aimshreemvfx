@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { generateStoryboardPreview } from "@/lib/curio-flex-video";
+import { generateVideo } from "@/lib/curio-flex-video";
 
 const requestSchema = z.object({
   prompt: z.string().min(1, "Prompt is required"),
@@ -14,10 +14,11 @@ const requestSchema = z.object({
 export async function POST(request: Request) {
   try {
     const payload = requestSchema.parse(await request.json());
-    const image = await generateStoryboardPreview(payload);
+    const video = await generateVideo(payload);
 
     return NextResponse.json({
-      image: `data:${image.mimeType};base64,${image.imageBase64}`,
+      video: video.videoBase64,
+      mimeType: video.mimeType,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -28,6 +29,6 @@ export async function POST(request: Request) {
     }
 
     console.error("Curio Flex Video generate error", error);
-    return NextResponse.json({ error: "Failed to generate Curio Flex Video storyboard" }, { status: 502 });
+    return NextResponse.json({ error: "Failed to generate Curio Flex Video" }, { status: 502 });
   }
 }

@@ -1,5 +1,4 @@
-const escapeForSvg = (value: string) =>
-  value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+import { z } from "zod";
 
 type CurioFlexVideoPayload = {
   prompt: string;
@@ -9,65 +8,276 @@ type CurioFlexVideoPayload = {
   aspectRatio: string;
 };
 
-type GeneratedImage = {
+type GeneratedVideo = {
   mimeType: string;
-  imageBase64: string;
+  videoBase64: string;
 };
 
-export async function generateStoryboardPreview({
+const envSchema = z.object({
+  apiKey: z.string().min(1, "CURIO_FLEX_API_KEY is required"),
+  model: z.string().optional().default("veo-3.0"),
+  apiVersion: z.string().optional().default("v1beta"),
+  baseUrl: z.string().url().optional().default("https://generativelanguage.googleapis.com"),
+  pollIntervalMs: z.coerce.number().optional().default(5_000),
+  maxPollAttempts: z.coerce.number().optional().default(60),
+});
+
+type Operation = {
+  name?: string;
+  done?: boolean;
+  error?: { message?: string; code?: number };
+  response?: unknown;
+};
+
+type VideoCandidate = {
+  bytes?: string;
+  mimeType?: string;
+  uri?: string;
+};
+
+function cleanEnv(value?: string | null) {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+function getEnv() {
+  const parsed = envSchema.parse({
+    apiKey: cleanEnv(process.env.CURIO_FLEX_API_KEY),
+    model: cleanEnv(process.env.CURIO_FLEX_VIDEO_MODEL),
+    apiVersion: cleanEnv(process.env.CURIO_FLEX_VIDEO_API_VERSION),
+    baseUrl: cleanEnv(process.env.CURIO_FLEX_VIDEO_BASE_URL),
+    pollIntervalMs: cleanEnv(process.env.CURIO_FLEX_VIDEO_POLL_INTERVAL_MS),
+    maxPollAttempts: cleanEnv(process.env.CURIO_FLEX_VIDEO_MAX_POLL_ATTEMPTS),
+  });
+
+  return {
+    ...parsed,
+    baseUrl: parsed.baseUrl.replace(/\/?$/, ""),
+  };
+}
+
+function parseDataUrl(dataUrl: string) {
+  const pattern = /^data:(?<mime>[^;]+);base64,(?<data>[A-Za-z0-9+/=]+)$/;
+  const match = dataUrl.match(pattern);
+
+  if (!match?.groups) {
+    throw new Error("Reference image must be a base64 data URL");
+  }
+
+  return { mimeType: match.groups.mime, data: match.groups.data };
+}
+
+function buildPrompt(prompt: string, storyboard?: string | null) {
+  const trimmedPrompt = prompt.trim();
+  const trimmedStoryboard = storyboard?.trim();
+
+  if (trimmedStoryboard) {
+    return `${trimmedPrompt}\n\nStoryboard beats:\n${trimmedStoryboard}`;
+  }
+
+  return trimmedPrompt;
+}
+
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function normaliseRelativeUri(uri: string, baseUrl: string, apiVersion: string) {
+  if (/^https?:/i.test(uri)) {
+    return uri;
+  }
+
+  const trimmed = uri.replace(/^\//, "");
+  return `${baseUrl}/${apiVersion}/${trimmed}`;
+}
+
+function searchForVideoCandidate(node: unknown): VideoCandidate | null {
+  if (!node || typeof node !== "object") {
+    return null;
+  }
+
+  if (Array.isArray(node)) {
+    for (const item of node) {
+      const candidate = searchForVideoCandidate(item);
+      if (candidate) return candidate;
+    }
+    return null;
+  }
+
+  const candidate = node as Record<string, unknown>;
+  if (typeof candidate.bytesBase64Encoded === "string" && candidate.bytesBase64Encoded.length > 0) {
+    return {
+      bytes: candidate.bytesBase64Encoded,
+      mimeType: typeof candidate.mimeType === "string" ? candidate.mimeType : undefined,
+    };
+  }
+
+  if (typeof candidate.videoBytes === "string" && candidate.videoBytes.length > 0) {
+    return {
+      bytes: candidate.videoBytes,
+      mimeType: typeof candidate.videoMimeType === "string" ? candidate.videoMimeType : undefined,
+    };
+  }
+
+  if (typeof candidate.base64Video === "string" && candidate.base64Video.length > 0) {
+    return {
+      bytes: candidate.base64Video,
+      mimeType: typeof candidate.mimeType === "string" ? candidate.mimeType : undefined,
+    };
+  }
+
+  if (typeof candidate.uri === "string" && candidate.uri.length > 0) {
+    return {
+      uri: candidate.uri,
+      mimeType: typeof candidate.mimeType === "string" ? candidate.mimeType : undefined,
+    };
+  }
+
+  if (typeof candidate.fileUri === "string" && candidate.fileUri.length > 0) {
+    return {
+      uri: candidate.fileUri,
+      mimeType: typeof candidate.mimeType === "string" ? candidate.mimeType : undefined,
+    };
+  }
+
+  for (const value of Object.values(candidate)) {
+    const nested = searchForVideoCandidate(value);
+    if (nested) return nested;
+  }
+
+  return null;
+}
+
+async function downloadVideoFromUri(uri: string, apiKey: string, baseUrl: string, apiVersion: string): Promise<GeneratedVideo> {
+  const resolved = normaliseRelativeUri(uri, baseUrl, apiVersion);
+  const url = new URL(resolved);
+  if (!url.searchParams.has("alt")) {
+    url.searchParams.set("alt", "media");
+  }
+
+  const response = await fetch(url.toString(), {
+    headers: {
+      "x-goog-api-key": apiKey,
+    },
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(`Failed to download generated video (${response.status}): ${message}`);
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+  return {
+    mimeType: response.headers.get("content-type") ?? "video/mp4",
+    videoBase64: Buffer.from(arrayBuffer).toString("base64"),
+  };
+}
+
+function sanitiseDuration(duration: string) {
+  const parsed = Number(duration);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    throw new Error("Duration must be a positive number of seconds");
+  }
+  return parsed;
+}
+
+export async function generateVideo({
   prompt,
   storyboard,
   referenceImage,
   duration,
   aspectRatio,
-}: CurioFlexVideoPayload): Promise<GeneratedImage> {
-  const trimmedPrompt = prompt.trim();
-  const promptPreview = trimmedPrompt.length > 140 ? `${trimmedPrompt.slice(0, 137)}…` : trimmedPrompt;
-  const storyboardPreview = storyboard?.trim() ?? "";
-  const hasStoryboard = storyboardPreview.length > 0;
+}: CurioFlexVideoPayload): Promise<GeneratedVideo> {
+  const { apiKey, model, apiVersion, baseUrl, pollIntervalMs, maxPollAttempts } = getEnv();
 
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="rgba(15, 8, 40, 1)" />
-      <stop offset="70%" stop-color="rgba(255, 122, 0, 0.35)" />
-      <stop offset="100%" stop-color="rgba(255, 184, 107, 0.2)" />
-    </linearGradient>
-    <linearGradient id="border" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="rgba(255, 122, 0, 0.6)" />
-      <stop offset="100%" stop-color="rgba(255, 184, 107, 0.6)" />
-    </linearGradient>
-  </defs>
-  <rect x="0" y="0" width="960" height="540" fill="url(#bg)" rx="48" />
-  <rect x="24" y="24" width="912" height="492" rx="36" fill="rgba(10, 10, 30, 0.55)" stroke="url(#border)" stroke-width="2" />
-  <text x="64" y="96" font-family="'Space Grotesk', sans-serif" font-size="28" fill="rgba(255,255,255,0.8)" letter-spacing="12" text-transform="uppercase">Curio Flex Video</text>
-  <text x="64" y="144" font-family="'Space Grotesk', sans-serif" font-size="18" fill="rgba(255,255,255,0.6)">Duration: ${escapeForSvg(
-    duration
-  )}s · Frame: ${escapeForSvg(aspectRatio)}</text>
-  <text x="64" y="204" font-family="'Space Grotesk', sans-serif" font-size="20" fill="rgba(255,184,107,0.9)" letter-spacing="6" text-transform="uppercase">Scene Prompt</text>
-  <foreignObject x="64" y="220" width="832" height="120">
-    <body xmlns="http://www.w3.org/1999/xhtml" style="font-family: 'Space Grotesk', sans-serif; color: rgba(255, 255, 255, 0.82); font-size: 18px; line-height: 1.6;">
-      ${escapeForSvg(promptPreview).replace(/\n/g, "<br/>")}
-    </body>
-  </foreignObject>
-  ${
-    hasStoryboard
-      ? `<text x="64" y="368" font-family="'Space Grotesk', sans-serif" font-size="20" fill="rgba(255,184,107,0.85)" letter-spacing="6" text-transform="uppercase">Storyboard Beats</text>
-  <foreignObject x="64" y="384" width="832" height="96">
-    <body xmlns="http://www.w3.org/1999/xhtml" style="font-family: 'Space Grotesk', sans-serif; color: rgba(255, 255, 255, 0.75); font-size: 16px; line-height: 1.6;">
-      ${escapeForSvg(storyboardPreview).replace(/\n/g, "<br/>")}
-    </body>
-  </foreignObject>`
-      : ""
-  }
-  <text x="64" y="520" font-family="'Space Grotesk', sans-serif" font-size="16" fill="rgba(255,255,255,0.55)">
-    ${escapeForSvg(referenceImage ? "Reference frame attached" : "No reference frame supplied")}
-  </text>
-</svg>`;
+  const combinedPrompt = buildPrompt(prompt, storyboard);
+  const durationSeconds = sanitiseDuration(duration);
 
-  return {
-    mimeType: "image/svg+xml",
-    imageBase64: Buffer.from(svg).toString("base64"),
+  const instance: Record<string, unknown> = {
+    prompt: combinedPrompt,
+    aspect_ratio: aspectRatio,
+    aspectRatio,
+    duration_seconds: durationSeconds,
+    durationSeconds,
   };
+
+  if (referenceImage) {
+    const { mimeType, data } = parseDataUrl(referenceImage);
+    instance.reference_image = { mime_type: mimeType, bytes_base64_encoded: data };
+    instance.referenceImage = { mimeType, bytesBase64Encoded: data };
+  }
+
+  const endpoint = `${baseUrl}/${apiVersion}/models/${model}:predictLongRunning`;
+
+  const initialResponse = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": apiKey,
+    },
+    body: JSON.stringify({
+      instances: [instance],
+    }),
+  });
+
+  const operation: Operation = await initialResponse.json();
+
+  if (!initialResponse.ok) {
+    const message = operation.error?.message ?? "Curio Flex Video generation request failed";
+    throw new Error(message);
+  }
+
+  if (!operation.name) {
+    throw new Error("Curio Flex Video generation did not return an operation name");
+  }
+
+  let attempts = 0;
+  let currentOperation: Operation = operation;
+
+  while (!currentOperation.done) {
+    if (attempts >= maxPollAttempts) {
+      throw new Error("Curio Flex Video generation timed out before completion");
+    }
+
+    await wait(pollIntervalMs);
+    attempts += 1;
+
+    const pollResponse = await fetch(`${baseUrl}/${apiVersion}/${currentOperation.name}`, {
+      headers: {
+        "x-goog-api-key": apiKey,
+      },
+    });
+
+    currentOperation = await pollResponse.json();
+
+    if (!pollResponse.ok) {
+      const message = currentOperation.error?.message ?? "Curio Flex Video polling failed";
+      throw new Error(message);
+    }
+  }
+
+  if (currentOperation.error) {
+    throw new Error(currentOperation.error.message ?? "Curio Flex Video generation failed");
+  }
+
+  const candidate = searchForVideoCandidate(currentOperation.response);
+
+  if (!candidate) {
+    throw new Error("Curio Flex Video generation did not yield a video output");
+  }
+
+  if (candidate.bytes) {
+    return {
+      mimeType: candidate.mimeType ?? "video/mp4",
+      videoBase64: candidate.bytes,
+    };
+  }
+
+  if (candidate.uri) {
+    return downloadVideoFromUri(candidate.uri, apiKey, baseUrl, apiVersion);
+  }
+
+  throw new Error("Curio Flex Video result could not be parsed");
 }
+
+export type { CurioFlexVideoPayload, GeneratedVideo };
