@@ -36,13 +36,18 @@ const replicatePredictionSchema = z.object({
     .optional(),
 });
 
-const baseUrl = process.env.NANO_BANANA_BASE_URL;
-const apiKey = process.env.NANO_BANANA_API_KEY;
-const provider = (process.env.NANO_BANANA_PROVIDER ?? "nanobanana") as Provider;
-const replicateModel = process.env.NANO_BANANA_REPLICATE_MODEL;
-const replicateVersion = process.env.NANO_BANANA_REPLICATE_VERSION;
-
 function getEnv() {
+  const provider = (process.env.NANO_BANANA_PROVIDER ?? "nanobanana") as Provider;
+  const apiKey = process.env.NANO_BANANA_API_KEY;
+  const replicateModel = process.env.NANO_BANANA_REPLICATE_MODEL;
+  const replicateVersion = process.env.NANO_BANANA_REPLICATE_VERSION;
+
+  const baseUrl =
+    process.env.NANO_BANANA_BASE_URL ??
+    (provider === "replicate"
+      ? "https://api.replicate.com/v1/predictions"
+      : "https://api.nanobanana.dev");
+
   if (!baseUrl) {
     throw new Error("Missing NANO_BANANA_BASE_URL environment variable");
   }
