@@ -277,6 +277,9 @@ export async function generateVideo({
   const instance: Record<string, unknown> = {
     prompt: combinedPrompt,
     aspectRatio,
+  };
+
+  const parameters: Record<string, unknown> = {
     durationSeconds,
   };
 
@@ -311,6 +314,7 @@ export async function generateVideo({
     },
     body: JSON.stringify({
       instances: [instance],
+      parameters,
     }),
   });
 
