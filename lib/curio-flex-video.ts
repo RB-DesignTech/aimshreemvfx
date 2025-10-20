@@ -222,7 +222,7 @@ async function uploadReferenceImage(
   formData.append("metadata", new Blob([metadata], { type: "application/json" }));
   formData.append("file", new Blob([fileBuffer], { type: mimeType }), "reference-image");
 
-  const uploadEndpoint = `${baseUrl}/upload/${apiVersion}/files`;
+  const uploadEndpoint = `${baseUrl}/upload/${apiVersion}/files?uploadType=multipart`;
 
   const response = await fetch(uploadEndpoint, {
     method: "POST",
@@ -232,11 +232,25 @@ async function uploadReferenceImage(
     body: formData,
   });
 
-  const body: UploadedFileResponse = await response.json();
+  const responseText = await response.text();
+  let body: UploadedFileResponse | undefined;
+
+  try {
+    body = responseText ? (JSON.parse(responseText) as UploadedFileResponse) : undefined;
+  } catch (error) {
+    // Some error responses from the API are plain text instead of JSON. We'll
+    // surface the original response below so callers receive a helpful error
+    // message.
+    body = undefined;
+  }
 
   if (!response.ok) {
-    const message = body.error?.message ?? "Failed to upload reference image";
+    const message = body?.error?.message ?? responseText || "Failed to upload reference image";
     throw new Error(message);
+  }
+
+  if (!body) {
+    throw new Error("Reference image upload response was not valid JSON");
   }
 
   const fileUri = body.file?.uri;
