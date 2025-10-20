@@ -12,13 +12,13 @@ type GenerationResponse = {
 };
 
 const statusMessages: Record<GenerationStatus, string> = {
-  idle: "Ready for your Veo concept",
+  idle: "Ready for your Curio Flex Video concept",
   running: "Sketching motion cues...",
   succeeded: "Storyboard concept ready",
-  failed: "The Veo muse is silent",
+  failed: "The Curio Flex Video muse is silent",
 };
 
-export default function VeoPage() {
+export default function CurioFlexVideoPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [prompt, setPrompt] = useState("");
@@ -81,7 +81,7 @@ export default function VeoPage() {
     setResultUrl(null);
 
     try {
-      const response = await fetch("/api/veo/generate", {
+      const response = await fetch("/api/curio-flex-video/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -104,7 +104,7 @@ export default function VeoPage() {
       setStatus("succeeded");
     } catch (err) {
       console.error(err);
-      setError("Could not generate with Veo. Please retry.");
+      setError("Could not generate with Curio Flex Video. Please retry.");
       setStatus("failed");
     } finally {
       setIsSubmitting(false);
@@ -115,7 +115,7 @@ export default function VeoPage() {
     if (!hasResult || !resultUrl) return;
     const link = document.createElement("a");
     link.href = resultUrl;
-    link.download = "veo-storyboard-preview.svg";
+    link.download = "curio-flex-video-storyboard.svg";
     link.click();
   }, [hasResult, resultUrl]);
 
@@ -139,12 +139,13 @@ export default function VeoPage() {
       </div>
 
       <header className="flex flex-col gap-4 text-center sm:gap-6">
-        <p className="text-sm uppercase tracking-[0.4em] text-orange-200/70">Google Veo 3 Story Lab</p>
+        <p className="text-sm uppercase tracking-[0.4em] text-orange-200/70">Curio Flex Video Story Lab</p>
         <h1 className="text-4xl font-semibold tracking-tight text-orange-50 sm:text-5xl md:text-6xl">
           Animate your concept
         </h1>
         <p className="mx-auto max-w-2xl text-lg text-orange-100/80">
-          Feed Veo a reference frame and narrative brief to conjure motion-first concept art, tailored for your next shot.
+          Feed Curio Flex Video a reference frame and narrative brief to conjure motion-first concept art, tailored for your
+          next shot.
         </p>
       </header>
 
@@ -212,7 +213,7 @@ export default function VeoPage() {
             <textarea
               value={storyboard}
               onChange={(event) => setStoryboard(event.target.value)}
-              placeholder="Break down key beats, dialogue, or camera moves to guide Veo."
+              placeholder="Break down key beats, dialogue, or camera moves to guide Curio Flex Video."
               className="input-field min-h-[120px] resize-none"
             />
           </div>
@@ -225,6 +226,8 @@ export default function VeoPage() {
                 onChange={(event) => setShotDuration(event.target.value)}
                 className="input-field appearance-none"
               >
+                <option value="1">1 second</option>
+                <option value="2">2 seconds</option>
                 <option value="6">6 seconds</option>
                 <option value="8">8 seconds</option>
                 <option value="10">10 seconds</option>
@@ -282,7 +285,7 @@ export default function VeoPage() {
           <div className="relative z-10 flex h-full flex-col gap-6">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm uppercase tracking-[0.3em] text-orange-200/70">Veo Motion Preview</p>
+                <p className="text-sm uppercase tracking-[0.3em] text-orange-200/70">Curio Flex Video Preview</p>
                 <p className="text-xs uppercase tracking-[0.4em] text-orange-200/50">
                   {shotDuration}s &bull; {aspectRatio} frame
                 </p>
@@ -298,7 +301,7 @@ export default function VeoPage() {
               {resultUrl ? (
                 <NextImage
                   src={resultUrl}
-                  alt="Generated Veo storyboard"
+                  alt="Generated Curio Flex Video storyboard"
                   fill
                   unoptimized
                   sizes="(max-width: 1024px) 100vw, 50vw"
@@ -314,9 +317,10 @@ export default function VeoPage() {
                 />
               ) : (
                 <div className="flex h-full w-full flex-col items-center justify-center gap-4 text-center text-orange-100/70">
-                  <p className="text-lg font-semibold">Seed Veo with imagery + narrative</p>
+                  <p className="text-lg font-semibold">Seed Curio Flex Video with imagery + narrative</p>
                   <p className="max-w-xs text-sm text-orange-100/60">
-                    Upload a frame or concept art, then map the sequence beats to preview how Veo 3 might choreograph the shot.
+                    Upload a frame or concept art, then map the sequence beats to preview how Curio Flex Video might choreograph
+                    the shot.
                   </p>
                 </div>
               )}
@@ -325,7 +329,7 @@ export default function VeoPage() {
             <div className="rounded-3xl border border-orange-500/10 bg-slate-900/70 p-5 text-sm text-orange-100/70">
               <p className="font-semibold uppercase tracking-[0.3em] text-orange-200/70">Brief Summary</p>
               <p className="mt-2 text-orange-100/80">
-                {prompt ? prompt : "Add a prompt to outline the motion you want Veo to explore."}
+                {prompt ? prompt : "Add a prompt to outline the motion you want Curio Flex Video to explore."}
               </p>
               {storyboard && (
                 <p className="mt-3 text-xs uppercase tracking-[0.3em] text-orange-200/60">Storyboard Beats</p>

@@ -1,7 +1,7 @@
 const escapeForSvg = (value: string) =>
   value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
-type VeoStoryboardPayload = {
+type CurioFlexVideoPayload = {
   prompt: string;
   storyboard?: string | null;
   referenceImage?: string | null;
@@ -20,7 +20,7 @@ export async function generateStoryboardPreview({
   referenceImage,
   duration,
   aspectRatio,
-}: VeoStoryboardPayload): Promise<GeneratedImage> {
+}: CurioFlexVideoPayload): Promise<GeneratedImage> {
   const trimmedPrompt = prompt.trim();
   const promptPreview = trimmedPrompt.length > 140 ? `${trimmedPrompt.slice(0, 137)}…` : trimmedPrompt;
   const storyboardPreview = storyboard?.trim() ?? "";
@@ -41,7 +41,7 @@ export async function generateStoryboardPreview({
   </defs>
   <rect x="0" y="0" width="960" height="540" fill="url(#bg)" rx="48" />
   <rect x="24" y="24" width="912" height="492" rx="36" fill="rgba(10, 10, 30, 0.55)" stroke="url(#border)" stroke-width="2" />
-  <text x="64" y="96" font-family="'Space Grotesk', sans-serif" font-size="28" fill="rgba(255,255,255,0.8)" letter-spacing="12" text-transform="uppercase">Google Veo 3</text>
+  <text x="64" y="96" font-family="'Space Grotesk', sans-serif" font-size="28" fill="rgba(255,255,255,0.8)" letter-spacing="12" text-transform="uppercase">Curio Flex Video</text>
   <text x="64" y="144" font-family="'Space Grotesk', sans-serif" font-size="18" fill="rgba(255,255,255,0.6)">Duration: ${escapeForSvg(
     duration
   )}s · Frame: ${escapeForSvg(aspectRatio)}</text>

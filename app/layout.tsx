@@ -10,8 +10,8 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Curio VFX",
-  description: "Funky neon VFX playground powered by Google Gemini",
+  title: "Curio Flex Lab",
+  description: "Funky neon playground for Curio Flex visuals and motion previews",
 };
 
 export default function RootLayout({
