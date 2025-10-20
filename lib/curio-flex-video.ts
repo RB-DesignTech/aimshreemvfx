@@ -15,7 +15,10 @@ type GeneratedVideo = {
 
 const envSchema = z.object({
   apiKey: z.string().min(1, "CURIO_FLEX_API_KEY is required"),
-  model: z.string().optional().default("veo-3.0"),
+  model: z
+    .string()
+    .optional()
+    .default("veo-3.1-generate-preview"),
   apiVersion: z.string().optional().default("v1beta"),
   baseUrl: z.string().url().optional().default("https://generativelanguage.googleapis.com"),
   pollIntervalMs: z.coerce.number().optional().default(5_000),

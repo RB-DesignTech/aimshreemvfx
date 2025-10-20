@@ -35,7 +35,7 @@ Use `.env.local.example` as a template for your local secrets. The app expects:
 
 - `CURIO_FLEX_API_KEY` – API key for Curio Flex image generation.
 - `CURIO_FLEX_IMAGE_MODEL` – Optional override for the Curio Flex image model (defaults to `gemini-2.5-flash-image`).
-- `CURIO_FLEX_VIDEO_MODEL` – Optional override for the Curio Flex Video Veo model (defaults to `veo-3.0`).
+- `CURIO_FLEX_VIDEO_MODEL` – Optional override for the Curio Flex Video Veo model (defaults to `veo-3.1-generate-preview`).
 - `CURIO_FLEX_VIDEO_POLL_INTERVAL_MS` – Optional override for how frequently the API polls long-running Veo jobs (defaults to `5000`).
 - `CURIO_FLEX_VIDEO_MAX_POLL_ATTEMPTS` – Optional override for the maximum number of poll attempts before timing out (defaults to `60`).
 
