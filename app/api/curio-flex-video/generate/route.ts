@@ -1,17 +1,21 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { generateImage } from "@/lib/gemini";
+import { generateStoryboardPreview } from "@/lib/curio-flex-video";
 
 const requestSchema = z.object({
   prompt: z.string().min(1, "Prompt is required"),
-  referenceImage: z.string().min(1, "Reference image data is required"),
+  storyboard: z.string().optional().nullable(),
+  referenceImage: z.string().optional().nullable(),
+  duration: z.string().min(1, "Duration is required"),
+  aspectRatio: z.string().min(1, "Aspect ratio is required"),
 });
 
 export async function POST(request: Request) {
   try {
     const payload = requestSchema.parse(await request.json());
-    const image = await generateImage(payload);
+    const image = await generateStoryboardPreview(payload);
+
     return NextResponse.json({
       image: `data:${image.mimeType};base64,${image.imageBase64}`,
     });
@@ -23,7 +27,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error("Gemini generate error", error);
-    return NextResponse.json({ error: "Failed to generate image" }, { status: 502 });
+    console.error("Curio Flex Video generate error", error);
+    return NextResponse.json({ error: "Failed to generate Curio Flex Video storyboard" }, { status: 502 });
   }
 }

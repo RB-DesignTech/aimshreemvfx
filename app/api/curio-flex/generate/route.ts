@@ -1,21 +1,17 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { generateStoryboardPreview } from "@/lib/veo";
+import { generateImage } from "@/lib/curio-flex";
 
 const requestSchema = z.object({
   prompt: z.string().min(1, "Prompt is required"),
-  storyboard: z.string().optional().nullable(),
-  referenceImage: z.string().optional().nullable(),
-  duration: z.string().min(1, "Duration is required"),
-  aspectRatio: z.string().min(1, "Aspect ratio is required"),
+  referenceImage: z.string().min(1, "Reference image data is required"),
 });
 
 export async function POST(request: Request) {
   try {
     const payload = requestSchema.parse(await request.json());
-    const image = await generateStoryboardPreview(payload);
-
+    const image = await generateImage(payload);
     return NextResponse.json({
       image: `data:${image.mimeType};base64,${image.imageBase64}`,
     });
@@ -27,7 +23,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error("Veo generate error", error);
-    return NextResponse.json({ error: "Failed to generate Veo storyboard" }, { status: 502 });
+    console.error("Curio Flex generate error", error);
+    return NextResponse.json({ error: "Failed to generate Curio Flex image" }, { status: 502 });
   }
 }

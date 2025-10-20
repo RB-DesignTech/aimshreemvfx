@@ -7,14 +7,14 @@ type GeneratePayload = {
 };
 
 const envSchema = z.object({
-  apiKey: z.string().min(1, "GEMINI_API_KEY is required"),
+  apiKey: z.string().min(1, "CURIO_FLEX_API_KEY is required"),
   model: z.string().min(1).default("gemini-2.5-flash-image"),
 });
 
 function getEnv() {
   return envSchema.parse({
-    apiKey: process.env.GEMINI_API_KEY,
-    model: process.env.GEMINI_IMAGE_MODEL,
+    apiKey: process.env.CURIO_FLEX_API_KEY,
+    model: process.env.CURIO_FLEX_IMAGE_MODEL,
   });
 }
 
@@ -62,7 +62,7 @@ export async function generateImage(payload: GeneratePayload) {
     .find((part) => part.inlineData?.data);
 
   if (!imagePart?.inlineData?.data) {
-    throw new Error("Gemini did not return an image");
+    throw new Error("Curio Flex did not return an image");
   }
 
   return responseSchema.parse({
