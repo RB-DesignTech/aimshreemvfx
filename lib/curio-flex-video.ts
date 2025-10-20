@@ -245,7 +245,7 @@ async function uploadReferenceImage(
   }
 
   if (!response.ok) {
-    const message = body?.error?.message ?? responseText || "Failed to upload reference image";
+    const message = (body?.error?.message ?? responseText) || "Failed to upload reference image";
     throw new Error(message);
   }
 
