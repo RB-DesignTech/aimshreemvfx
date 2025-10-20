@@ -9,7 +9,7 @@ const spaceGrotesk = Space_Grotesk({
 
 export const metadata: Metadata = {
   title: "Curio VFX",
-  description: "Funky neon VFX playground powered by NanoBanana",
+  description: "Funky neon VFX playground powered by Google Gemini",
 };
 
 export default function RootLayout({

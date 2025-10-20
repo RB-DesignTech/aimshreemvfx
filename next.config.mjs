@@ -1,7 +1,5 @@
 const rawPatterns = process.env.NEXT_IMAGE_REMOTE_PATTERNS?.split(",") ?? [];
 
-const baseFromEnv = process.env.NANO_BANANA_BASE_URL;
-
 const remotePatterns = rawPatterns
   .map((entry) => entry.trim())
   .filter(Boolean)
@@ -20,19 +18,6 @@ const remotePatterns = rawPatterns
     }
   })
   .filter(Boolean);
-
-if (!remotePatterns.length && baseFromEnv) {
-  try {
-    const parsed = new URL(baseFromEnv);
-    remotePatterns.push({
-      protocol: parsed.protocol.replace(":", ""),
-      hostname: parsed.hostname,
-      pathname: "/**",
-    });
-  } catch (error) {
-    console.warn("Invalid NANO_BANANA_BASE_URL for image configuration");
-  }
-}
 
 const nextConfig = {
   images: {
