@@ -1,18 +1,14 @@
 "use client";
 
 import NextImage from "next/image";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 import Particles from "@/components/Particles";
 
-type JobState = {
-  status: "idle" | "queued" | "running" | "succeeded" | "failed";
-  message?: string;
-};
+type GenerationStatus = "idle" | "running" | "succeeded" | "failed";
 
-const funkyMessages: Record<JobState["status"], string> = {
+const funkyMessages: Record<GenerationStatus, string> = {
   idle: "Awaiting your neon vision",
-  queued: "Queueing shards of light...",
   running: "Conjuring particle storms...",
   succeeded: "Composite conjured!",
   failed: "The portal fizzled",
@@ -29,34 +25,21 @@ function FunkyLoading() {
 }
 
 type GenerationResponse = {
-  jobId: string;
-};
-
-type JobResponse = {
-  status: "queued" | "running" | "succeeded" | "failed";
-  resultUrl?: string;
+  image: string;
 };
 
 export default function Page() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [prompt, setPrompt] = useState("");
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [referenceName, setReferenceName] = useState<string>("");
-  const [jobState, setJobState] = useState<JobState>({ status: "idle" });
+  const [status, setStatus] = useState<GenerationStatus>("idle");
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const hasResult = useMemo(() => jobState.status === "succeeded" && !!resultUrl, [jobState.status, resultUrl]);
-
-  const clearPolling = useCallback(() => {
-    if (pollingRef.current) {
-      clearTimeout(pollingRef.current);
-      pollingRef.current = null;
-    }
-  }, []);
+  const hasResult = useMemo(() => status === "succeeded" && !!resultUrl, [status, resultUrl]);
 
   const readFileAsDataUrl = (file: File) =>
     new Promise<string>((resolve, reject) => {
@@ -77,7 +60,7 @@ export default function Page() {
     const file = files[0];
     setError(null);
     setResultUrl(null);
-    setJobState({ status: "idle" });
+    setStatus("idle");
     setReferenceName(file.name);
 
     try {
@@ -89,41 +72,6 @@ export default function Page() {
     }
   }, []);
 
-  const pollJob = useCallback(
-    async (jobId: string) => {
-      try {
-        const response = await fetch(`/api/nb/jobs/${jobId}`, { cache: "no-store" });
-        if (!response.ok) {
-          throw new Error(`Failed to poll job (${response.status})`);
-        }
-        const data: JobResponse = await response.json();
-        setJobState({ status: data.status, message: funkyMessages[data.status] });
-
-        if (data.status === "succeeded" && data.resultUrl) {
-          setResultUrl(data.resultUrl);
-          clearPolling();
-          return;
-        }
-
-        if (data.status === "failed") {
-          clearPolling();
-          setError("NanoBanana reported a failure. Try another prompt!");
-          return;
-        }
-
-        pollingRef.current = setTimeout(() => {
-          void pollJob(jobId);
-        }, 2200);
-      } catch (err) {
-        console.error(err);
-        clearPolling();
-        setError("Polling fizzled. Please retry.");
-        setJobState({ status: "failed" });
-      }
-    },
-    [clearPolling]
-  );
-
   const onSubmit = useCallback(async () => {
     if (!referenceImage) {
       setError("Reference image required");
@@ -134,14 +82,13 @@ export default function Page() {
       return;
     }
 
-    clearPolling();
     setIsSubmitting(true);
-    setJobState({ status: "queued", message: funkyMessages.queued });
+    setStatus("running");
     setError(null);
     setResultUrl(null);
 
     try {
-      const response = await fetch("/api/nb/generate", {
+      const response = await fetch("/api/gemini/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -154,18 +101,16 @@ export default function Page() {
       }
 
       const data: GenerationResponse = await response.json();
-      setJobState({ status: "running", message: funkyMessages.running });
-      pollingRef.current = setTimeout(() => {
-        void pollJob(data.jobId);
-      }, 1500);
+      setResultUrl(data.image);
+      setStatus("succeeded");
     } catch (err) {
       console.error(err);
-      setError("Could not start the NanoBanana generation");
-      setJobState({ status: "failed" });
+      setError("Could not generate with Gemini. Please retry.");
+      setStatus("failed");
     } finally {
       setIsSubmitting(false);
     }
-  }, [clearPolling, pollJob, prompt, referenceImage]);
+  }, [prompt, referenceImage]);
 
   const onDownload = useCallback(() => {
     if (!hasResult || !resultUrl) return;
@@ -223,25 +168,19 @@ export default function Page() {
     fileInputRef.current?.click();
   }, []);
 
-  useEffect(() => {
-    return () => {
-      clearPolling();
-    };
-  }, [clearPolling]);
-
   return (
     <main className="relative mx-auto flex min-h-screen max-w-6xl flex-col gap-10 px-4 pb-20 pt-16">
       <div className="absolute inset-0 -z-10 opacity-70">
         <Particles className="h-full w-full" />
       </div>
       <header className="flex flex-col gap-4 text-center sm:gap-6">
-        <p className="text-sm uppercase tracking-[0.4em] text-orange-200/70">NanoBanana powered</p>
+        <p className="text-sm uppercase tracking-[0.4em] text-orange-200/70">Gemini 2.5 Flash Image</p>
         <h1 className="text-4xl font-semibold tracking-tight text-orange-50 sm:text-5xl md:text-6xl">
           Curio VFX
         </h1>
         <p className="mx-auto max-w-2xl text-lg text-orange-100/80">
-          Drop in a reference frame, riff a prompt, and let the neon-fueled NanoBanana cores conjure your next
-          composite.
+          Drop in a reference frame, riff a prompt, and let Google Gemini 2.5 Flash Image remix it into neon-drenched
+          composites.
         </p>
       </header>
 
@@ -296,7 +235,7 @@ export default function Page() {
             <div className="flex flex-wrap items-center gap-3">
               <span className="status-pill">
                 <span className="inline-flex h-2 w-2 rounded-full bg-orange-300 shadow-neon" />
-                {jobState.message ?? funkyMessages[jobState.status]}
+                {funkyMessages[status]}
               </span>
               {error && <span className="text-sm text-orange-200/70">{error}</span>}
             </div>
@@ -328,7 +267,7 @@ export default function Page() {
           <div className="relative z-10 flex h-full flex-col gap-6">
             <div className="flex items-center justify-between">
               <p className="text-sm uppercase tracking-[0.3em] text-orange-200/70">Live Preview</p>
-              {jobState.status === "running" && <FunkyLoading />}
+              {status === "running" && <FunkyLoading />}
             </div>
             <div className="relative flex-1 overflow-hidden rounded-3xl border border-orange-200/20 bg-slate-950/60 shadow-neon">
               {resultUrl ? (

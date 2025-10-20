@@ -1,6 +1,6 @@
 # Curio VFX
 
-A funky, neon, orange-forward VFX playground powered by the NanoBanana APIs.
+A funky, neon, orange-forward VFX playground powered by Google Gemini 2.5 Flash Image.
 
 ## 1. Bootstrap the project
 
@@ -15,13 +15,11 @@ pnpm i zod
 1. Run the commands above to generate the Next.js 14 project scaffold with Tailwind CSS and TypeScript.
 2. Copy the contents of this repository into the generated `curio-vfx` folder (or apply the diff on top of the scaffold) so the custom UI, API routes, and styling are available.
 3. Duplicate `.env.local.example` to `.env.local` and populate the values:
-   - Choose your provider with `NANO_BANANA_PROVIDER` (`nanobanana` by default, set to `replicate` for Replicate-hosted models).
-   - Supply `NANO_BANANA_API_KEY`. If you omit `NANO_BANANA_BASE_URL`, the app falls back to `https://api.nanobanana.com` for the NanoBanana API or `https://api.replicate.com/v1/predictions` when the provider is Replicate.
-   - For Replicate, provide either `NANO_BANANA_REPLICATE_MODEL` or `NANO_BANANA_REPLICATE_VERSION`.
-   - Optionally list any extra remote image hosts in `NEXT_IMAGE_REMOTE_PATTERNS` (e.g. `replicate.delivery` for Replicate-generated assets).
+   - Set `GEMINI_API_KEY` to your Google AI Studio key.
+   - Optionally override `GEMINI_IMAGE_MODEL` if you want something other than `gemini-2.5-flash`.
 4. Install dependencies with `pnpm install`.
 5. Start the development server with `pnpm dev` and open http://localhost:3000 to explore the playground.
-6. When deploying, ensure the NanoBanana (or Replicate) environment variables are configured on your hosting platform.
+6. When deploying, ensure the Gemini environment variables are configured on your hosting platform.
 
 ## 2. Useful scripts
 
@@ -34,17 +32,14 @@ pnpm i zod
 
 Use `.env.local.example` as a template for your local secrets. The app expects:
 
-- `NANO_BANANA_PROVIDER` – Provider selector (`nanobanana` by default, set to `replicate` when using Replicate-hosted NanoBanana models).
-- `NANO_BANANA_BASE_URL` – Override the API base URL if needed. Defaults to `https://api.nanobanana.com` for the NanoBanana API and `https://api.replicate.com/v1/predictions` for Replicate when unset.
-- `NANO_BANANA_API_KEY` – API key or token used to authorize requests.
-- `NANO_BANANA_REPLICATE_MODEL` / `NANO_BANANA_REPLICATE_VERSION` – Replicate-specific identifiers required when the provider is `replicate` (supply at least one).
-- `NEXT_IMAGE_REMOTE_PATTERNS` – Optional comma-separated list of remote image hosts allowed by Next/Image.
+- `GEMINI_API_KEY` – API key generated in Google AI Studio.
+- `GEMINI_IMAGE_MODEL` – Optional override for the image-capable Gemini model (defaults to `gemini-2.5-flash`).
 
 ## 4. Project structure highlights
 
-- `app/page.tsx` – Main UI with drag-and-drop uploads, prompt input, live preview, and polling.
-- `app/api/nb/*` – Server-side proxy endpoints that communicate with NanoBanana using secure server-side fetch calls.
-- `lib/nanobanana.ts` – Tiny SDK for generating jobs and polling their status.
+- `app/page.tsx` – Main UI with drag-and-drop uploads, prompt input, and immediate Gemini responses.
+- `app/api/gemini/*` – Server-side proxy endpoints that communicate with Google Gemini using secure server-side fetch calls.
+- `lib/gemini.ts` – Lightweight wrapper around the official Google Generative AI SDK.
 - `components/Particles.tsx` – Dependency-free animated particle background.
 - `app/globals.css` – Tailwind-powered neon theming with glow effects, scanlines, and film grain.
 - `tailwind.config.ts` & `next.config.mjs` – Tailwind customization and image remote pattern configuration.
