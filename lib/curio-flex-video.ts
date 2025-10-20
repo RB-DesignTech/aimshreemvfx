@@ -38,6 +38,17 @@ type VideoCandidate = {
   uri?: string;
 };
 
+type UploadedFileResponse = {
+  file?: {
+    name?: string;
+    uri?: string;
+    mimeType?: string;
+  };
+  error?: {
+    message?: string;
+  };
+};
+
 function cleanEnv(value?: string | null) {
   const trimmed = value?.trim();
   return trimmed ? trimmed : undefined;
@@ -176,12 +187,65 @@ async function downloadVideoFromUri(uri: string, apiKey: string, baseUrl: string
   };
 }
 
+const SUPPORTED_DURATIONS = new Set([4, 6, 8]);
+
 function sanitiseDuration(duration: string) {
   const parsed = Number(duration);
   if (!Number.isFinite(parsed) || parsed <= 0) {
     throw new Error("Duration must be a positive number of seconds");
   }
+
+  if (!SUPPORTED_DURATIONS.has(parsed)) {
+    throw new Error("Veo 3.1 only supports 4s, 6s, or 8s durations");
+  }
+
   return parsed;
+}
+
+async function uploadReferenceImage(
+  dataUrl: string,
+  apiKey: string,
+  baseUrl: string,
+  apiVersion: string
+) {
+  const { mimeType, data } = parseDataUrl(dataUrl);
+  const fileBuffer = Buffer.from(data, "base64");
+
+  const metadata = JSON.stringify({
+    file: {
+      displayName: "Curio Flex Reference Image",
+      mimeType,
+    },
+  });
+
+  const formData = new FormData();
+  formData.append("metadata", new Blob([metadata], { type: "application/json" }));
+  formData.append("file", new Blob([fileBuffer], { type: mimeType }), "reference-image");
+
+  const uploadEndpoint = `${baseUrl}/upload/${apiVersion}/files`;
+
+  const response = await fetch(uploadEndpoint, {
+    method: "POST",
+    headers: {
+      "x-goog-api-key": apiKey,
+    },
+    body: formData,
+  });
+
+  const body: UploadedFileResponse = await response.json();
+
+  if (!response.ok) {
+    const message = body.error?.message ?? "Failed to upload reference image";
+    throw new Error(message);
+  }
+
+  const fileUri = body.file?.uri;
+
+  if (!fileUri) {
+    throw new Error("Reference image upload did not return a file URI");
+  }
+
+  return { fileUri, mimeType };
 }
 
 export async function generateVideo({
@@ -198,16 +262,29 @@ export async function generateVideo({
 
   const instance: Record<string, unknown> = {
     prompt: combinedPrompt,
-    aspect_ratio: aspectRatio,
     aspectRatio,
-    duration_seconds: durationSeconds,
     durationSeconds,
   };
 
   if (referenceImage) {
-    const { mimeType, data } = parseDataUrl(referenceImage);
-    instance.reference_image = { mime_type: mimeType, bytes_base64_encoded: data };
-    instance.referenceImage = { mimeType, bytesBase64Encoded: data };
+    if (aspectRatio !== "16:9") {
+      throw new Error("Veo 3.1 only supports 16:9 when supplying a reference image");
+    }
+
+    if (durationSeconds !== 8) {
+      throw new Error("Veo 3.1 requires an 8 second duration when using a reference image");
+    }
+
+    const { fileUri } = await uploadReferenceImage(referenceImage, apiKey, baseUrl, apiVersion);
+
+    instance.referenceImages = [
+      {
+        referenceType: "ASSET",
+        image: {
+          fileUri,
+        },
+      },
+    ];
   }
 
   const endpoint = `${baseUrl}/${apiVersion}/models/${model}:predictLongRunning`;
