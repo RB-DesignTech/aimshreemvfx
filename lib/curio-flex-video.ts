@@ -227,10 +227,8 @@ export async function generateVideo({
       {
         referenceType: "ASSET",
         image: {
-          inlineData: {
-            mimeType,
-            data,
-          },
+          mimeType,
+          bytesBase64Encoded: data,
         },
       },
     ];
