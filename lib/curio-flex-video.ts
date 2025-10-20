@@ -209,9 +209,7 @@ export async function generateVideo({
 
   const parameters: Record<string, unknown> = {
     durationSeconds,
-    videoConfig: {
-      aspectRatio,
-    },
+    aspectRatio,
   };
 
   if (referenceImage) {
