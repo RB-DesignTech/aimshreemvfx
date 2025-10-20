@@ -78,6 +78,18 @@ export default function CurioFlexVideoPage() {
       return;
     }
 
+    if (referenceImage && shotDuration !== "8") {
+      setError("Veo 3.1 requires an 8 second video when using a reference frame.");
+      setStatus("failed");
+      return;
+    }
+
+    if (referenceImage && aspectRatio !== "16:9") {
+      setError("Reference frames only work with the 16:9 aspect ratio on Veo 3.1.");
+      setStatus("failed");
+      return;
+    }
+
     setIsSubmitting(true);
     setStatus("running");
     setError(null);
@@ -238,12 +250,9 @@ export default function CurioFlexVideoPage() {
                 onChange={(event) => setShotDuration(event.target.value)}
                 className="input-field appearance-none"
               >
-                <option value="1">1 second</option>
-                <option value="2">2 seconds</option>
+                <option value="4">4 seconds</option>
                 <option value="6">6 seconds</option>
                 <option value="8">8 seconds</option>
-                <option value="10">10 seconds</option>
-                <option value="12">12 seconds</option>
               </select>
             </div>
             <div className="flex flex-col gap-2">
@@ -260,6 +269,12 @@ export default function CurioFlexVideoPage() {
               </select>
             </div>
           </div>
+
+          {referenceImage && (
+            <p className="text-xs text-orange-200/70">
+              Reference-guided runs are locked to 8 seconds and a 16:9 frame on Veo 3.1.
+            </p>
+          )}
 
           <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-wrap items-center gap-3">
