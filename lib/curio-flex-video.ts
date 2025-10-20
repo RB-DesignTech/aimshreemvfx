@@ -198,15 +198,12 @@ export async function generateVideo({
 
   const instance: Record<string, unknown> = {
     prompt: combinedPrompt,
-    aspect_ratio: aspectRatio,
     aspectRatio,
-    duration_seconds: durationSeconds,
     durationSeconds,
   };
 
   if (referenceImage) {
     const { mimeType, data } = parseDataUrl(referenceImage);
-    instance.reference_image = { mime_type: mimeType, bytes_base64_encoded: data };
     instance.referenceImage = { mimeType, bytesBase64Encoded: data };
   }
 
