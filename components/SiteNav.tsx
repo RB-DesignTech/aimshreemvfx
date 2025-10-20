@@ -4,8 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const links = [
-  { href: "/", label: "Gemini 2.5 Flash" },
-  { href: "/veo", label: "Google Veo 3" },
+  { href: "/", label: "Curio Flex" },
+  { href: "/curio-flex-video", label: "Curio Flex Video" },
 ];
 
 export default function SiteNav() {
@@ -15,7 +15,7 @@ export default function SiteNav() {
     <nav className="relative z-30 border-b border-orange-500/10 bg-slate-950/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-6">
         <span className="text-sm font-semibold uppercase tracking-[0.5em] text-orange-200/80">
-          Curio VFX Lab
+          Curio Flex Lab
         </span>
         <div className="flex items-center gap-2 sm:gap-3">
           {links.map((link) => {

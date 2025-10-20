@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { generateImage } from "@/lib/gemini";
+import { generateImage } from "@/lib/curio-flex";
 
 const requestSchema = z.object({
   prompt: z.string().min(1, "Prompt is required"),
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error("Gemini generate error", error);
-    return NextResponse.json({ error: "Failed to generate image" }, { status: 502 });
+    console.error("Curio Flex generate error", error);
+    return NextResponse.json({ error: "Failed to generate Curio Flex image" }, { status: 502 });
   }
 }

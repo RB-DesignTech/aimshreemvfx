@@ -88,7 +88,7 @@ export default function Page() {
     setResultUrl(null);
 
     try {
-      const response = await fetch("/api/gemini/generate", {
+      const response = await fetch("/api/curio-flex/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -105,7 +105,7 @@ export default function Page() {
       setStatus("succeeded");
     } catch (err) {
       console.error(err);
-      setError("Could not generate with Gemini. Please retry.");
+      setError("Could not generate with Curio Flex. Please retry.");
       setStatus("failed");
     } finally {
       setIsSubmitting(false);
@@ -115,46 +115,18 @@ export default function Page() {
   const onDownload = useCallback(() => {
     if (!hasResult || !resultUrl) return;
 
-    const img = new window.Image();
-    img.crossOrigin = "anonymous";
-    img.src = resultUrl;
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      const width = img.naturalWidth || 1024;
-      const height = img.naturalHeight || 1024;
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
-      const gradient = ctx.createLinearGradient(0, 0, width, height);
-      gradient.addColorStop(0, "rgba(15, 8, 40, 0.95)");
-      gradient.addColorStop(1, "rgba(255, 122, 0, 0.25)");
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, width, height);
-
-      ctx.globalCompositeOperation = "screen";
-      ctx.drawImage(img, 0, 0, width, height);
-      ctx.globalCompositeOperation = "lighter";
-
-      ctx.fillStyle = "rgba(255, 184, 107, 0.35)";
-      ctx.fillRect(0, 0, width, height);
-
-      ctx.globalCompositeOperation = "source-over";
-      ctx.font = `${Math.floor(width * 0.035)}px 'Space Grotesk', sans-serif`;
-      ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
-      ctx.textBaseline = "bottom";
-      ctx.fillText("Curio VFX", 32, height - 40);
-
+    try {
       const link = document.createElement("a");
-      link.href = canvas.toDataURL("image/png");
-      link.download = "curio-vfx-composite.png";
+      link.href = resultUrl;
+      link.download = "curio-flex-image.png";
+      document.body.appendChild(link);
       link.click();
-    };
-    img.onerror = () => {
-      setError("Unable to download composite. Check cross-origin settings.");
-    };
-  }, [hasResult, resultUrl]);
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error(err);
+      setError("Unable to download image preview.");
+    }
+  }, [hasResult, resultUrl, setError]);
 
   const onDrop = useCallback(
     async (event: React.DragEvent<HTMLDivElement>) => {
@@ -174,13 +146,12 @@ export default function Page() {
         <Particles className="h-full w-full" />
       </div>
       <header className="flex flex-col gap-4 text-center sm:gap-6">
-        <p className="text-sm uppercase tracking-[0.4em] text-orange-200/70">Gemini 2.5 Flash Image</p>
+        <p className="text-sm uppercase tracking-[0.4em] text-orange-200/70">Curio Flex Image Studio</p>
         <h1 className="text-4xl font-semibold tracking-tight text-orange-50 sm:text-5xl md:text-6xl">
-          Curio VFX
+          Curio Flex
         </h1>
         <p className="mx-auto max-w-2xl text-lg text-orange-100/80">
-          Drop in a reference frame, riff a prompt, and let Google Gemini 2.5 Flash Image remix it into neon-drenched
-          composites.
+          Drop in a reference frame, riff a prompt, and let Curio Flex remix it into neon-drenched composites.
         </p>
       </header>
 
