@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import type { Route } from "next";
 import { usePathname } from "next/navigation";
 
-const links = [
+const links: Array<{ href: Route; label: string }> = [
   { href: "/", label: "Curio Flex" },
   { href: "/curio-flex-video", label: "Curio Flex Video" },
 ];
