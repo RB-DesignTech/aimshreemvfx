@@ -8,7 +8,7 @@ type GeneratePayload = {
 
 const envSchema = z.object({
   apiKey: z.string().min(1, "CURIO_FLEX_API_KEY is required"),
-  model: z.string().min(1).default("gemini-2.5-flash-image"),
+  model: z.string().min(1, "CURIO_FLEX_IMAGE_MODEL is required"),
 });
 
 function getEnv() {
