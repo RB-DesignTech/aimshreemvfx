@@ -17,8 +17,7 @@ const envSchema = z.object({
   apiKey: z.string().min(1, "CURIO_FLEX_API_KEY is required"),
   model: z
     .string()
-    .optional()
-    .default("veo-3.1-generate-preview"),
+    .min(1, "CURIO_FLEX_VIDEO_MODEL is required"),
   apiVersion: z.string().optional().default("v1beta"),
   baseUrl: z.string().url().optional().default("https://generativelanguage.googleapis.com"),
   pollIntervalMs: z.coerce.number().optional().default(5_000),
@@ -185,7 +184,7 @@ function sanitiseDuration(duration: string) {
   }
 
   if (!SUPPORTED_DURATIONS.has(parsed)) {
-    throw new Error("Veo 3.1 only supports 4s, 6s, or 8s durations");
+    throw new Error("Configured video model only supports 4s, 6s, or 8s durations");
   }
 
   return parsed;
@@ -214,11 +213,11 @@ export async function generateVideo({
 
   if (referenceImage) {
     if (aspectRatio !== "16:9") {
-      throw new Error("Veo 3.1 only supports 16:9 when supplying a reference image");
+      throw new Error("Configured video model only supports 16:9 when supplying a reference image");
     }
 
     if (durationSeconds !== 8) {
-      throw new Error("Veo 3.1 requires an 8 second duration when using a reference image");
+      throw new Error("Configured video model requires an 8 second duration when using a reference image");
     }
 
     const { mimeType, data } = parseDataUrl(referenceImage);
