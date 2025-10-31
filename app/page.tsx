@@ -105,7 +105,7 @@ export default function Page() {
       setStatus("succeeded");
     } catch (err) {
       console.error(err);
-      setError("Could not generate with Curio Flex. Please retry.");
+      setError("Could not generate with AimShreem Flex. Please retry.");
       setStatus("failed");
     } finally {
       setIsSubmitting(false);
@@ -118,7 +118,7 @@ export default function Page() {
     try {
       const link = document.createElement("a");
       link.href = resultUrl;
-      link.download = "curio-flex-image.png";
+      link.download = "aimshreem-flex-image.png";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -146,12 +146,12 @@ export default function Page() {
         <Particles className="h-full w-full" />
       </div>
       <header className="flex flex-col gap-4 text-center sm:gap-6">
-        <p className="text-sm uppercase tracking-[0.4em] text-orange-200/70">Curio Flex Image Studio</p>
+        <p className="text-sm uppercase tracking-[0.4em] text-orange-200/70">AimShreem Flex Image Studio</p>
         <h1 className="text-4xl font-semibold tracking-tight text-orange-50 sm:text-5xl md:text-6xl">
-          Curio Flex
+          AimShreem Flex
         </h1>
         <p className="mx-auto max-w-2xl text-lg text-orange-100/80">
-          Drop in a reference frame, riff a prompt, and let Curio Flex remix it into neon-drenched composites.
+          Drop in a reference frame, riff a prompt, and let AimShreem Flex remix it into neon-drenched composites.
         </p>
       </header>
 
