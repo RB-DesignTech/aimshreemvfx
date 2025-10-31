@@ -13,9 +13,9 @@ export default function SiteNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="relative z-30 border-b border-orange-500/10 bg-slate-950/80 backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-6">
-        <span className="text-sm font-semibold uppercase tracking-[0.5em] text-orange-200/80">
+    <nav className="relative z-30 border-b border-[#00bbff]/25 bg-[#05003a]/85 shadow-[0_0_40px_rgba(0,187,255,0.18)] backdrop-blur-lg">
+      <div className="mx-auto flex w-full items-center justify-between px-6 py-5 sm:px-10 lg:px-16">
+        <span className="text-sm font-semibold uppercase tracking-[0.5em] text-[#66e1ff]/80">
           AimShreem Flex Lab
         </span>
         <div className="flex items-center gap-2 sm:gap-3">
@@ -29,8 +29,8 @@ export default function SiteNav() {
                 href={link.href}
                 className={`rounded-full px-4 py-2 text-sm font-semibold transition sm:px-5 sm:py-2.5 ${
                   isActive
-                    ? "bg-gradient-to-r from-orange-500 to-orange-300 text-slate-950 shadow-[0_0_25px_rgba(255,122,0,0.35)]"
-                    : "border border-orange-500/30 text-orange-200/80 hover:border-orange-300/80 hover:text-orange-50"
+                    ? "bg-gradient-to-r from-[#00bbff] to-[#66e1ff] text-[#05003a] shadow-[0_0_25px_rgba(0,187,255,0.35)]"
+                    : "border border-[#00bbff]/40 text-[#66e1ff]/80 hover:border-[#66e1ff]/80 hover:text-[#e0f9ff]"
                 }`}
               >
                 {link.label}

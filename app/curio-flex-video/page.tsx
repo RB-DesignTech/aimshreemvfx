@@ -157,7 +157,7 @@ export default function AimShreemFlexVideoPage() {
   }, []);
 
   return (
-    <main className="relative mx-auto flex min-h-screen max-w-6xl flex-col gap-10 px-4 pb-20 pt-16">
+    <main className="relative flex min-h-screen w-full flex-col gap-12 px-6 pb-24 pt-20 sm:px-10 lg:px-16 xl:gap-14">
       <div className="absolute inset-0 -z-10 opacity-70">
         <Particles className="h-full w-full" />
       </div>
@@ -173,139 +173,143 @@ export default function AimShreemFlexVideoPage() {
         </p>
       </header>
 
-      <section className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-        <div className="glow-card flex flex-col gap-6 p-6 sm:p-8">
-          <div
-            onDragOver={(event) => event.preventDefault()}
-            onDrop={onDrop}
-            className="drop-zone"
-            role="button"
-            tabIndex={0}
-            onClick={onUploadClick}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                onUploadClick();
-              }
-            }}
-          >
-            <div className="flex flex-col items-center gap-2">
-              <span className="rounded-full bg-orange-500/20 px-3 py-1 text-xs uppercase tracking-[0.3em] text-[#00bbff]">
-                Optional Frame
-              </span>
-              <p className="text-base font-semibold text-[#00bbff]">Drag & drop or click to upload</p>
-              <p className="text-sm text-[#00bbff]/60">PNG, JPG up to 5MB</p>
-              {referenceName ? (
-                <div className="flex flex-col items-center gap-1 text-[#00bbff]/80">
-                  <p className="text-sm">Loaded: {referenceName}</p>
-                  <button
-                    type="button"
-                    className="text-xs uppercase tracking-[0.3em] text-[#66e1ff]/80 hover:text-[#00bbff]"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onRemoveReference();
-                    }}
-                  >
-                    Remove
-                  </button>
-                </div>
-              ) : (
-                <p className="text-sm text-[#00bbff]/60">No frame selected</p>
-              )}
+      <section className="grid items-start gap-10 xl:gap-12 lg:grid-cols-[minmax(320px,420px)_minmax(0,1fr)]">
+        <div className="mx-auto w-full max-w-xl">
+          <div className="glow-card flex flex-col gap-6 p-6 sm:p-8">
+            <div
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={onDrop}
+              className="drop-zone"
+              role="button"
+              tabIndex={0}
+              onClick={onUploadClick}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onUploadClick();
+                }
+              }}
+            >
+              <div className="flex flex-col items-center gap-2">
+                <span className="rounded-full bg-[#00bbff]/15 px-3 py-1 text-xs uppercase tracking-[0.3em] text-[#00bbff]">
+                  Optional Frame
+                </span>
+                <p className="text-base font-semibold text-[#00bbff]">Drag & drop or click to upload</p>
+                <p className="text-sm text-[#00bbff]/60">PNG, JPG up to 5MB</p>
+                {referenceName ? (
+                  <div className="flex flex-col items-center gap-1 text-[#00bbff]/80">
+                    <p className="text-sm">Loaded: {referenceName}</p>
+                    <button
+                      type="button"
+                      className="text-xs uppercase tracking-[0.3em] text-[#66e1ff]/80 hover:text-[#c6f5ff]"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onRemoveReference();
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-sm text-[#00bbff]/60">No frame selected</p>
+                )}
+              </div>
             </div>
-          </div>
-          <input
-            ref={fileInputRef}
-            className="hidden"
-            type="file"
-            accept="image/*"
-            onChange={(event) => void handleFiles(event.target.files)}
-          />
-
-          <div className="flex flex-col gap-3">
-            <label className="text-sm font-semibold uppercase tracking-[0.25em] text-[#00bbff]">Scene Prompt</label>
-            <textarea
-              value={prompt}
-              onChange={(event) => setPrompt(event.target.value)}
-              placeholder="Describe the motion, emotion, and lighting cues..."
-              className="input-field min-h-[140px] resize-none"
+            <input
+              ref={fileInputRef}
+              className="hidden"
+              type="file"
+              accept="image/*"
+              onChange={(event) => void handleFiles(event.target.files)}
             />
-          </div>
 
-          <div className="flex flex-col gap-3">
-            <label className="text-sm font-semibold uppercase tracking-[0.25em] text-[#00bbff]">Storyboard Beats (optional)</label>
-            <textarea
-              value={storyboard}
-              onChange={(event) => setStoryboard(event.target.value)}
-              placeholder="Break down key beats, dialogue, or camera moves to guide AimShreem Flex Video."
-              className="input-field min-h-[120px] resize-none"
-            />
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-semibold uppercase tracking-[0.25em] text-[#00bbff]">Shot Duration</label>
-              <select
-                value={shotDuration}
-                onChange={(event) => setShotDuration(event.target.value)}
-                className="input-field appearance-none"
-              >
-                <option value="4">4 seconds</option>
-                <option value="6">6 seconds</option>
-                <option value="8">8 seconds</option>
-              </select>
+            <div className="flex flex-col gap-3">
+              <label className="text-sm font-semibold uppercase tracking-[0.25em] text-[#00bbff]">Scene Prompt</label>
+              <textarea
+                value={prompt}
+                onChange={(event) => setPrompt(event.target.value)}
+                placeholder="Describe the motion, emotion, and lighting cues..."
+                className="input-field min-h-[140px] resize-none"
+              />
             </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-semibold uppercase tracking-[0.25em] text-[#00bbff]">Aspect Ratio</label>
-              <select
-                value={aspectRatio}
-                onChange={(event) => setAspectRatio(event.target.value)}
-                className="input-field appearance-none"
-              >
-                <option value="16:9">16:9</option>
-                <option value="9:16">9:16</option>
-                <option value="1:1">1:1</option>
-                <option value="2.39:1">2.39:1</option>
-              </select>
-            </div>
-          </div>
 
-          {referenceImage && (
-            <p className="text-xs text-[#00bbff]/70">
-              Reference-guided runs are locked to 8 seconds and a 16:9 frame on Veo 3.1.
-            </p>
-          )}
-
-          <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="status-pill">
-                <span className="inline-flex h-2 w-2 rounded-full bg-orange-300 shadow-neon" />
-                {statusMessages[status]}
-              </span>
-              {error && <span className="text-sm text-[#00bbff]/70">{error}</span>}
+            <div className="flex flex-col gap-3">
+              <label className="text-sm font-semibold uppercase tracking-[0.25em] text-[#00bbff]">
+                Storyboard Beats (optional)
+              </label>
+              <textarea
+                value={storyboard}
+                onChange={(event) => setStoryboard(event.target.value)}
+                placeholder="Break down key beats, dialogue, or camera moves to guide AimShreem Flex Video."
+                className="input-field min-h-[120px] resize-none"
+              />
             </div>
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                className="button-primary"
-                onClick={onSubmit}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Rendering" : "Generate Video"}
-              </button>
-              <button
-                type="button"
-                className="button-secondary"
-                onClick={onDownload}
-                disabled={!hasResult}
-              >
-                Download Video
-              </button>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-semibold uppercase tracking-[0.25em] text-[#00bbff]">Shot Duration</label>
+                <select
+                  value={shotDuration}
+                  onChange={(event) => setShotDuration(event.target.value)}
+                  className="input-field appearance-none"
+                >
+                  <option value="4">4 seconds</option>
+                  <option value="6">6 seconds</option>
+                  <option value="8">8 seconds</option>
+                </select>
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-semibold uppercase tracking-[0.25em] text-[#00bbff]">Aspect Ratio</label>
+                <select
+                  value={aspectRatio}
+                  onChange={(event) => setAspectRatio(event.target.value)}
+                  className="input-field appearance-none"
+                >
+                  <option value="16:9">16:9</option>
+                  <option value="9:16">9:16</option>
+                  <option value="1:1">1:1</option>
+                  <option value="2.39:1">2.39:1</option>
+                </select>
+              </div>
+            </div>
+
+            {referenceImage && (
+              <p className="text-xs text-[#00bbff]/70">
+                Reference-guided runs are locked to 8 seconds and a 16:9 frame on Veo 3.1.
+              </p>
+            )}
+
+            <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="status-pill">
+                  <span className="inline-flex h-2 w-2 rounded-full bg-[#66e1ff] shadow-neon" />
+                  {statusMessages[status]}
+                </span>
+                {error && <span className="text-sm text-[#00bbff]/70">{error}</span>}
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  className="button-primary"
+                  onClick={onSubmit}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Rendering" : "Generate Video"}
+                </button>
+                <button
+                  type="button"
+                  className="button-secondary"
+                  onClick={onDownload}
+                  disabled={!hasResult}
+                >
+                  Download Video
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-3xl border border-[#00bbff]/25 bg-gradient-to-br from-[#030028]/80 via-[#05003a]/70 to-[#030028]/80 p-6 sm:p-10">
+        <div className="relative mx-auto w-full max-w-5xl overflow-hidden rounded-3xl border border-[#00bbff]/25 bg-gradient-to-br from-[#030028]/80 via-[#05003a]/70 to-[#030028]/80 p-6 sm:p-10">
           <div className="absolute inset-0">
             <Particles className="h-full w-full" />
           </div>
@@ -319,12 +323,12 @@ export default function AimShreemFlexVideoPage() {
               </div>
               {status === "running" && (
                 <div className="relative flex items-center justify-center">
-                  <div className="h-16 w-16 animate-spin rounded-full border-4 border-orange-500/40 border-t-orange-400/90"></div>
-                  <div className="absolute h-12 w-12 animate-ping rounded-full bg-gradient-to-r from-orange-500/70 to-orange-300/70 blur-xl"></div>
+                  <div className="h-16 w-16 animate-spin rounded-full border-4 border-[#66e1ff]/30 border-t-[#00bbff]"></div>
+                  <div className="absolute h-12 w-12 animate-ping rounded-full bg-gradient-to-r from-[#00bbff]/40 to-[#66e1ff]/30 blur-xl"></div>
                 </div>
               )}
             </div>
-            <div className="relative flex-1 overflow-hidden rounded-3xl border border-[#00bbff]/25 bg-[#05003a]/60 shadow-neon aspect-video min-h-[360px] sm:min-h-[420px]">
+            <div className="relative w-full overflow-hidden rounded-3xl border border-[#00bbff]/25 bg-[#05003a]/60 shadow-neon aspect-[16/9]">
               {resultUrl ? (
                 <video
                   key={resultUrl}
@@ -353,7 +357,7 @@ export default function AimShreemFlexVideoPage() {
                   </p>
                 </div>
               )}
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-orange-500/10 via-transparent to-orange-400/10" />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#00bbff]/12 via-transparent to-[#66e1ff]/12" />
             </div>
             <div className="rounded-3xl border border-[#00bbff]/20 bg-[#05003a]/70 p-5 text-sm text-[#00bbff]/70">
               <p className="font-semibold uppercase tracking-[0.3em] text-[#00bbff]/70">Brief Summary</p>

@@ -2,17 +2,17 @@
 
 import { useEffect, useRef } from "react";
 
-type Particle = {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  size: number;
-  life: number;
-  hue: number;
+type Wave = {
+  amplitude: number;
+  wavelength: number;
+  speed: number;
+  phase: number;
+  verticalOffset: number;
+  lineWidth: number;
+  opacity: number;
 };
 
-const PARTICLE_COUNT = 140;
+const WAVE_COUNT = 4;
 
 export function Particles({ className }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -25,10 +25,18 @@ export function Particles({ className }: { className?: string }) {
     if (!ctx) return;
 
     let animationFrameId: number;
-    const particles: Particle[] = [];
-
     let viewWidth = 0;
     let viewHeight = 0;
+
+    const waves: Wave[] = Array.from({ length: WAVE_COUNT }, (_, index) => ({
+      amplitude: 18 + index * 6,
+      wavelength: 160 + index * 40,
+      speed: 0.6 + index * 0.12,
+      phase: Math.random() * Math.PI * 2,
+      verticalOffset: 0.22 + index * 0.18,
+      lineWidth: 1 + index * 0.4,
+      opacity: 0.16 + index * 0.09,
+    }));
 
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
@@ -42,59 +50,45 @@ export function Particles({ className }: { className?: string }) {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
-    const spawnParticle = (): Particle => {
-      const hue = 25 + Math.random() * 20;
-      return {
-        x: Math.random() * (viewWidth || 1),
-        y: Math.random() * (viewHeight || 1),
-        vx: (Math.random() - 0.5) * 0.4,
-        vy: (Math.random() - 0.5) * 0.4,
-        size: Math.random() * 1.8 + 0.6,
-        life: Math.random() * 200 + 80,
-        hue,
-      };
-    };
-
-    const ensureParticles = () => {
-      while (particles.length < PARTICLE_COUNT) {
-        particles.push(spawnParticle());
-      }
-    };
-
     const step = () => {
       ctx.clearRect(0, 0, viewWidth, viewHeight);
 
-      particles.forEach((particle, index) => {
-        particle.x += particle.vx;
-        particle.y += particle.vy;
-        particle.life -= 1;
-        particle.vx += Math.sin(performance.now() / 1000 + index) * 0.002;
-        particle.vy += Math.cos(performance.now() / 1100 + index) * 0.002;
+      const time = performance.now() / 1000;
 
-        if (particle.life <= 0 || particle.x < 0 || particle.y < 0 || particle.x > viewWidth || particle.y > viewHeight) {
-          particles[index] = spawnParticle();
-          return;
+      const backdrop = ctx.createLinearGradient(0, 0, 0, viewHeight);
+      backdrop.addColorStop(0, "rgba(0, 187, 255, 0.04)");
+      backdrop.addColorStop(0.5, "rgba(13, 0, 99, 0)");
+      backdrop.addColorStop(1, "rgba(102, 225, 255, 0.05)");
+      ctx.fillStyle = backdrop;
+      ctx.fillRect(0, 0, viewWidth, viewHeight);
+
+      waves.forEach((wave, waveIndex) => {
+        const gradient = ctx.createLinearGradient(0, 0, viewWidth, 0);
+        gradient.addColorStop(0, "rgba(0, 187, 255, 0.18)");
+        gradient.addColorStop(0.5, "rgba(102, 225, 255, 0.28)");
+        gradient.addColorStop(1, "rgba(0, 187, 255, 0.18)");
+
+        ctx.beginPath();
+        for (let x = 0; x <= viewWidth; x += 2) {
+          const normalizedX = x / wave.wavelength;
+          const oscillation = Math.sin(normalizedX + wave.phase + time * wave.speed);
+          const y = viewHeight * wave.verticalOffset + oscillation * wave.amplitude;
+          if (x === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
         }
 
-        const gradient = ctx.createRadialGradient(
-          particle.x,
-          particle.y,
-          0,
-          particle.x,
-          particle.y,
-          particle.size * 12
-        );
-        gradient.addColorStop(0, `hsla(${particle.hue}, 100%, 65%, 0.9)`);
-        gradient.addColorStop(0.5, `hsla(${particle.hue + 15}, 100%, 55%, 0.35)`);
-        gradient.addColorStop(1, "rgba(10, 10, 30, 0)");
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = wave.lineWidth;
+        ctx.globalAlpha = wave.opacity;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
 
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size * 8, 0, Math.PI * 2);
-        ctx.fill();
+        waves[waveIndex].phase += 0.002;
       });
 
-      ensureParticles();
       animationFrameId = window.requestAnimationFrame(step);
     };
 
@@ -103,7 +97,6 @@ export function Particles({ className }: { className?: string }) {
     };
 
     resize();
-    ensureParticles();
     animationFrameId = window.requestAnimationFrame(step);
     window.addEventListener("resize", handleResize);
 
