@@ -146,11 +146,11 @@ export default function Page() {
         <Particles className="h-full w-full" />
       </div>
       <header className="flex flex-col gap-4 text-center sm:gap-6">
-        <p className="text-sm uppercase tracking-[0.4em] text-orange-200/70">AimShreem Flex Image Studio</p>
-        <h1 className="text-4xl font-semibold tracking-tight text-orange-50 sm:text-5xl md:text-6xl">
+        <p className="text-sm uppercase tracking-[0.4em] text-[#00bbff]/70">AimShreem Flex Image Studio</p>
+        <h1 className="text-4xl font-semibold tracking-tight text-[#00bbff] sm:text-5xl md:text-6xl">
           AimShreem Flex
         </h1>
-        <p className="mx-auto max-w-2xl text-lg text-orange-100/80">
+        <p className="mx-auto max-w-2xl text-lg text-[#00bbff]/80">
           Drop in a reference frame, riff a prompt, and let AimShreem Flex remix it into neon-drenched composites.
         </p>
       </header>
@@ -172,15 +172,15 @@ export default function Page() {
             }}
           >
             <div className="flex flex-col items-center gap-2">
-              <span className="rounded-full bg-orange-500/20 px-3 py-1 text-xs uppercase tracking-[0.3em] text-orange-200">
+              <span className="rounded-full bg-orange-500/20 px-3 py-1 text-xs uppercase tracking-[0.3em] text-[#00bbff]">
                 Reference
               </span>
-              <p className="text-base font-semibold text-orange-50">Drag & drop or click to upload</p>
-              <p className="text-sm text-orange-100/60">PNG, JPG up to 5MB</p>
+              <p className="text-base font-semibold text-[#00bbff]">Drag & drop or click to upload</p>
+              <p className="text-sm text-[#00bbff]/60">PNG, JPG up to 5MB</p>
               {referenceName ? (
-                <p className="text-sm text-orange-100/80">Loaded: {referenceName}</p>
+                <p className="text-sm text-[#00bbff]/80">Loaded: {referenceName}</p>
               ) : (
-                <p className="text-sm text-orange-100/60">No file selected</p>
+                <p className="text-sm text-[#00bbff]/60">No file selected</p>
               )}
             </div>
           </div>
@@ -193,7 +193,7 @@ export default function Page() {
           />
 
           <div className="flex flex-col gap-3">
-            <label className="text-sm font-semibold uppercase tracking-[0.25em] text-orange-200">Prompt</label>
+            <label className="text-sm font-semibold uppercase tracking-[0.25em] text-[#00bbff]">Prompt</label>
             <textarea
               value={prompt}
               onChange={(event) => setPrompt(event.target.value)}
@@ -208,7 +208,7 @@ export default function Page() {
                 <span className="inline-flex h-2 w-2 rounded-full bg-orange-300 shadow-neon" />
                 {funkyMessages[status]}
               </span>
-              {error && <span className="text-sm text-orange-200/70">{error}</span>}
+              {error && <span className="text-sm text-[#00bbff]/70">{error}</span>}
             </div>
             <div className="flex items-center gap-3">
               <button
@@ -231,16 +231,16 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-3xl border border-orange-400/20 bg-gradient-to-br from-slate-950/80 via-slate-900/70 to-slate-950/80 p-6 sm:p-10">
+          <div className="relative overflow-hidden rounded-3xl border border-[#00bbff]/25 bg-gradient-to-br from-[#030028]/80 via-[#05003a]/70 to-[#030028]/80 p-6 sm:p-10">
           <div className="absolute inset-0">
             <Particles className="h-full w-full" />
           </div>
           <div className="relative z-10 flex h-full flex-col gap-6">
             <div className="flex items-center justify-between">
-              <p className="text-sm uppercase tracking-[0.3em] text-orange-200/70">Live Preview</p>
+              <p className="text-sm uppercase tracking-[0.3em] text-[#00bbff]/70">Live Preview</p>
               {status === "running" && <FunkyLoading />}
             </div>
-            <div className="relative flex-1 overflow-hidden rounded-3xl border border-orange-200/20 bg-slate-950/60 shadow-neon aspect-video min-h-[360px] sm:min-h-[420px]">
+            <div className="relative flex-1 overflow-hidden rounded-3xl border border-[#00bbff]/25 bg-[#05003a]/60 shadow-neon aspect-video min-h-[360px] sm:min-h-[420px]">
               {resultUrl ? (
                 <NextImage
                   src={resultUrl}
@@ -259,9 +259,9 @@ export default function Page() {
                   className="object-cover opacity-80"
                 />
               ) : (
-                <div className="flex h-full w-full flex-col items-center justify-center gap-4 text-center text-orange-100/70">
+                <div className="flex h-full w-full flex-col items-center justify-center gap-4 text-center text-[#00bbff]/70">
                   <p className="text-lg font-semibold">Your VFX masterpiece awaits</p>
-                  <p className="max-w-xs text-sm text-orange-100/60">
+                  <p className="max-w-xs text-sm text-[#00bbff]/60">
                     Upload a reference image and craft a prompt to watch particles swirl it into something new.
                   </p>
                 </div>
