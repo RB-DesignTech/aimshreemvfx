@@ -324,7 +324,7 @@ export default function AimShreemFlexVideoPage() {
                 </div>
               )}
             </div>
-            <div className="relative flex-1 overflow-hidden rounded-3xl border border-orange-200/20 bg-slate-950/60 shadow-neon">
+            <div className="relative flex-1 overflow-hidden rounded-3xl border border-orange-200/20 bg-slate-950/60 shadow-neon aspect-video min-h-[360px] sm:min-h-[420px]">
               {resultUrl ? (
                 <video
                   key={resultUrl}
