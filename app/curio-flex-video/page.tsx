@@ -174,7 +174,7 @@ export default function AimShreemFlexVideoPage() {
       </header>
 
       <section className="grid items-start gap-10 xl:gap-12 lg:grid-cols-[minmax(320px,420px)_minmax(0,1fr)]">
-        <div className="mx-auto w-full max-w-xl">
+        <div className="mx-auto w-full max-w-xl lg:mx-0">
           <div className="glow-card flex flex-col gap-6 p-6 sm:p-8">
             <div
               onDragOver={(event) => event.preventDefault()}
@@ -309,7 +309,7 @@ export default function AimShreemFlexVideoPage() {
           </div>
         </div>
 
-        <div className="relative mx-auto w-full max-w-5xl overflow-hidden rounded-3xl border border-[#00bbff]/25 bg-gradient-to-br from-[#030028]/80 via-[#05003a]/70 to-[#030028]/80 p-6 sm:p-10">
+        <div className="relative mx-auto w-full max-w-5xl overflow-hidden rounded-3xl border border-[#00bbff]/25 bg-gradient-to-br from-[#030028]/80 via-[#05003a]/70 to-[#030028]/80 p-6 sm:p-10 lg:mx-0 lg:max-w-none">
           <div className="absolute inset-0">
             <Particles className="h-full w-full" />
           </div>
