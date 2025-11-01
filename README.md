@@ -1,6 +1,6 @@
 # Curio Flex Lab
 
-A funky, neon, orange-forward playground for experimenting with Curio Flex image remixes and Curio Flex Video renders powered by Curio Flex services...
+A funky, neon, orange-forward playground for experimenting with Curio Flex image remixes and Curio Flex Video renders powered by Curio Flex services.
 
 ## 1. Bootstrap the project
 
